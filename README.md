@@ -6,33 +6,37 @@ The documentation provides the tools and documentation to get your own pipeline 
 
 ### Installation
 
-The package is available on [NPM](https://www.npmjs.com) and can be installed using your package manager of choice:
+The package is available on [NPM](https://www.npmjs.com/package/@flit/cdk-pipeline) and can be installed using your package manager of choice:
 
 ```bash
 npm i @flit/cdk-pipeline
+```
 
+```bash
 pnpm add @flit/cdk-pipeline
+```
 
+```bash
 yarn add @flit/cdk-pipeline
 ```
 
 ### Basics
 
-The snippet bellow is a basic example of a pipeline which will run whenever a change is detected in a GitHub repository and which will update itself and deploy and update a user defined stack. This example demonstrates the three basic elements that make up a pipeline:
+The snippet bellow is a basic example of a pipeline which will run whenever a change is detected in a GitHub repository. The pipeline will update itself and, deploy and update a user defined stack. This example demonstrates the three basic elements that make up a pipeline:
 
 #### - Pipeline
 
-The Pipeline construct will create a CloudFormation Stack which contains the pipeline and all of the required peripheral resources to make it work.
+The `Pipeline` construct will create a CloudFormation Stack which contains the pipeline and all of the required peripheral resources to make it work.
 
 #### - Segment
 
-A Segment is simply a pre-configured set of pipeline actions which together represent a commonly used CI/CD pattern, like for example building and deploying a stack.
+A `Segment` is simply a pre-configured set of pipeline actions which together represent a commonly used CI/CD pattern, like for example building and deploying a stack.
 
 To build properly, a Pipeline requires at least one SourceSegment, exactly one PipelineSegment and at least one other segment.
 
 #### - Artifact
 
-An Artifact represents a pipeline artifact which can be used to pass information between stages. Every artifact needs to be the output of exactly one Segment and can be consumed by any segments that need that output.
+An `Artifact` represents a pipeline artifact which can be used to pass information between stages. Every artifact needs to be the output of exactly one Segment and can be consumed by any segments that need that output.
 
 ```typescript
 import { App, SecretValue, Stack } from "aws-cdk-lib";
@@ -46,30 +50,55 @@ import {
 
 const APP = new App();
 
-const sourceArtifact = new Artifact();
+const SOURCE_ARTIFACT = new Artifact();
+const BUILD_ARTIFACT = new Artifact();
 
 new Pipeline(APP, "Pipeline", {
   rootDir: "./",
   segments: [
-    new GitHubSourceSegment({
-      oauthToken: SecretValue.secretsManager("github-access-token"),
-      output: sourceArtifact,
+    new CodeStarSourceSegment({
+      output: SOURCE_ARTIFACT,
+      connectionArn: "code-star-connection-arn",
       owner: "owner-name",
       repository: "repo-name",
       branch: "branch-name",
     }),
     new PipelineSegment({
-      input: sourceArtifact,
-      command: "cdk synth Pipeline --strict --exclusively",
+      input: SOURCE_ARTIFACT,
+      output: BUILD_ARTIFACT,
+      project: {
+        environment: {
+          computeType: ComputeType.MEDIUM,
+          buildImage: LinuxBuildImage.AMAZON_LINUX_2_ARM_3,
+          privileged: true,
+        },
+        buildSpec: BuildSpec.fromObject({
+          version: "0.2",
+          phases: {
+            install: {
+              "runtime-versions": {
+                nodejs: "latest",
+              },
+              commands: ["npm i -g npm@latest", "npm ci"],
+            },
+            build: {
+              commands: "cdk synth --strict --quiet",
+            },
+          },
+        }),
+      },
     }),
     new StackSegment({
-      stack: new Stack(APP, "Stack1"),
-      input: sourceArtifact,
-      command: "cdk synth Stack1 --strict --exclusively",
+      stack: new Stack(APP, "BackEnd"),
+      input: BUILD_ARTIFACT,
     }),
   ],
 });
 ```
+
+The above code would produce a pipeline similar to this:
+
+<img src="./media/pipeline-ouput-example.png?raw=true" alt="alt text" width="300px">
 
 ### Multiple stacks
 
@@ -87,39 +116,59 @@ import {
 
 const APP = new App();
 
-const sourceArtifact = new Artifact();
+const SOURCE_ARTIFACT = new Artifact();
+const BUILD_ARTIFACT = new Artifact();
 
 new Pipeline(APP, "Pipeline", {
   rootDir: "./",
   segments: [
-    new GitHubSourceSegment({
-      oauthToken: SecretValue.secretsManager("github-access-token"),
-      output: sourceArtifact,
+    new CodeStarSourceSegment({
+      output: SOURCE_ARTIFACT,
+      connectionArn: "code-star-connection-arn",
       owner: "owner-name",
       repository: "repo-name",
       branch: "branch-name",
     }),
     new PipelineSegment({
-      input: sourceArtifact,
-      command: "cdk synth Pipeline --strict --exclusively",
+      input: SOURCE_ARTIFACT,
+      output: BUILD_ARTIFACT,
+      project: {
+        environment: {
+          computeType: ComputeType.MEDIUM,
+          buildImage: LinuxBuildImage.AMAZON_LINUX_2_ARM_3,
+          privileged: true,
+        },
+        buildSpec: BuildSpec.fromObject({
+          version: "0.2",
+          phases: {
+            install: {
+              "runtime-versions": {
+                nodejs: "latest",
+              },
+              commands: ["npm i -g npm@latest", "npm ci"],
+            },
+            build: {
+              commands: "cdk synth --strict --quiet",
+            },
+          },
+        }),
+      },
     }),
     new StackSegment({
-      stack: new Stack(APP, "Stack1"),
-      input: sourceArtifact,
-      command: "cdk synth Stack1 --strict --exclusively",
+      stack: new Stack(APP, "BackEnd"),
+      input: BUILD_ARTIFACT,
     }),
     new StackSegment({
-      stack: new Stack(APP, "Stack2"),
-      input: sourceArtifact,
-      command: "cdk synth Stack2 --strict --exclusively",
+      stack: new Stack(APP, "FrontEnd"),
+      input: BUILD_ARTIFACT,
     }),
   ],
 });
 ```
 
-### Passing assets
+### More complex example
 
-If a segment requires the output artifact of a previous segment then you can simply add an output artifact to the previous stage and pass it as additional input to another segment.
+In some cases you might have a build that bakes API endpoints generated by a previous stage into the stack assets during the build stage. Using the CDK native L3 [CodePipeline](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.pipelines.CodePipeline.html) construct makes this hard, but with this more flexible setup you can run another build for any stack that needs it, and use the previous stacks outputs in that build.
 
 ```typescript
 import { App, SecretValue, Stack } from "aws-cdk-lib";
@@ -133,37 +182,83 @@ import {
 
 const APP = new App();
 
-const sourceArtifact = new Artifact();
-const stack1Artifact = new Artifact();
+const SOURCE_ARTIFACT = new Artifact();
+const BUILD_ARTIFACT = new Artifact();
+const FRONT_END_OUTPUT_ARTIFACT = new Artifact();
 
 new Pipeline(APP, "Pipeline", {
   rootDir: "./",
   segments: [
-    new GitHubSourceSegment({
-      oauthToken: SecretValue.secretsManager("jumper-de-github-access-tokens"),
-      output: sourceArtifact,
-      owner: "p-mercury",
-      repository: "jumper-de",
-      branch: "main",
+    new CodeStarSourceSegment({
+      output: SOURCE_ARTIFACT,
+      connectionArn: "code-star-connection-arn",
+      owner: "owner-name",
+      repository: "repo-name",
+      branch: "branch-name",
     }),
     new PipelineSegment({
-      input: sourceArtifact,
-      command: "cdk synth Pipeline --strict --exclusively",
+      input: SOURCE_ARTIFACT,
+      output: BUILD_ARTIFACT,
+      project: {
+        environment: {
+          computeType: ComputeType.MEDIUM,
+          buildImage: LinuxBuildImage.AMAZON_LINUX_2_ARM_3,
+          privileged: true,
+        },
+        buildSpec: BuildSpec.fromObject({
+          version: "0.2",
+          phases: {
+            install: {
+              "runtime-versions": {
+                nodejs: "latest",
+              },
+              commands: ["npm i -g npm@latest", "npm ci"],
+            },
+            build: {
+              commands: "cdk synth --strict --quiet",
+            },
+          },
+        }),
+      },
     }),
     new StackSegment({
-      stack: new Stack(APP, "Stack1"),
-      input: sourceArtifact,
-      output: stack1Artifact,
-      command: "cdk synth Stack1 --strict --exclusively",
+      stack: new Stack(APP, "BackEnd"),
+      input: BUILD_ARTIFACT,
+      output: FRONT_END_OUTPUT_ARTIFACT,
     }),
     new StackSegment({
-      stack: new Stack(APP, "Stack2"),
-      input: [sourceArtifact, stack1Artifact],
-      command: "cdk synth Stack2 --strict --exclusively",
+      stack: new Stack(APP, "FrontEnd"),
+      input: [SOURCE_ARTIFACT, FRONT_END_OUTPUT_ARTIFACT],
+      project: {
+        environment: {
+          computeType: ComputeType.MEDIUM,
+          buildImage: LinuxBuildImage.AMAZON_LINUX_2_ARM_3,
+          privileged: true,
+        },
+        buildSpec: BuildSpec.fromObject({
+          version: "0.2",
+          phases: {
+            install: {
+              "runtime-versions": {
+                nodejs: "latest",
+              },
+              commands: ["npm i -g npm@latest", "npm ci"],
+            },
+            build: {
+              commands: [
+                "do something with the STACK_1_OUTPUT_ARTIFACT",
+                "cdk synth --strict --quiet",
+              ],
+            },
+          },
+        }),
+      },
     }),
   ],
 });
 ```
+
+This example first build the project, deploys the `Pipeline` and `BackEnd` stacks and then rebuilds the project now with access to the outputs of the `BackEnd` stack. This allows you to now bake in any API endpoints dynamically generated in the `BackEnd` stack.
 
 ### Building your own segment
 
