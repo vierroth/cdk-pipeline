@@ -1,6 +1,6 @@
 {
   "name": "@flit/cdk-pipeline",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A highly customizable and extensible CI/CD pipeline intended as alternative to CDK's native CodePipeline",
   "keywords": [
     "aws",
@@ -45,8 +45,8 @@
     "typescript": "^5.6.3"
   },
   "peerDependencies": {
-    "aws-cdk-lib": "2.163.0",
-    "constructs": "10.4.2"
+    "aws-cdk-lib": "^2.163.0",
+    "constructs": "^10.4.2"
   },
   "publishConfig": {
     "access": "public"
