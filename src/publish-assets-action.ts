@@ -96,7 +96,7 @@ export class PublishAssetsAction extends Construct implements IAction {
               "runtime-versions": {
                 nodejs: "latest",
               },
-              commands: ["npm i -g npm@latest @flit/publish-cdk-assets@latest"],
+              commands: ["npm i -g @flit/publish-cdk-assets@latest"],
             },
             build: {
               commands: `pca ${
