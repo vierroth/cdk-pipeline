@@ -1,0 +1,20 @@
+{
+  "name": "example",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "@flit/cdk-pipeline example",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc && cdk synth --quiet"
+  },
+  "dependencies": {
+    "@types/node": "^22.10.7",
+    "aws-cdk": "^2.176.0",
+    "aws-cdk-lib": "^2.174.0",
+    "constructs": "^10.4.0",
+    "typescript": "^5.7.3",
+    "@flit/cdk-pipeline": "*"
+  }
+}
