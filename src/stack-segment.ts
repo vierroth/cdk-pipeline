@@ -45,30 +45,21 @@ export interface StackSegmentProps {
   readonly environmentVariables?: { [key: string]: BuildEnvironmentVariable };
   /**
    * The name of the stack to deploy the changes to.
-   * @deafult The name of the given stack.
+   * @defaultValue The name of the given stack.
    */
   readonly stackName?: string;
   /**
-   * The AWS account this Action is supposed to operate in.
-   */
-  readonly account?: string;
-  /**
-   * The AWS region the given Action resides in.
-   */
-  readonly region?: string;
-  /**
    * The artifact to hold the stack deployment output file.
-   * @default no output artifact
    */
   readonly output?: Artifact;
   /**
    * The filename for the file in the output artifact
-   * @default artifact.json
+   * @defaultValue `"artifact.json"``
    */
   readonly outputFileName?: string;
   /**
    * Does this stage require manual approval of the change set?
-   * @default false
+   * @defaultValue `false``
    */
   readonly manualApproval?: Boolean;
 }
@@ -102,8 +93,6 @@ export interface StackSegmentConstructedProps {
   readonly project?: ProjectProps;
   readonly environmentVariables?: { [key: string]: BuildEnvironmentVariable };
   readonly stackName?: string;
-  readonly account?: string;
-  readonly region?: string;
   readonly input: Artifact;
   readonly extraInputs?: Artifact[];
   readonly output?: Artifact;
@@ -166,8 +155,8 @@ export class StackSegmentConstructed extends SegmentConstructed {
         actionName: "PrepareChanges",
         runOrder: buildArtifact ? 3 : 1,
         stackName: props.stackName ? props.stackName : props.stack.stackName,
-        account: props.account,
-        region: props.region,
+        account: props.stack.account,
+        region: props.stack.region,
         changeSetName: `${props.stack.stackName}Changes`,
         adminPermissions: true,
         templatePath: (buildArtifact ? buildArtifact : props.input).atPath(
@@ -192,8 +181,8 @@ export class StackSegmentConstructed extends SegmentConstructed {
             ? 4
             : 2,
         stackName: props.stackName ? props.stackName : props.stack.stackName,
-        account: props.account,
-        region: props.region,
+        account: props.stack.account,
+        region: props.stack.region,
         changeSetName: `${props.stack.stackName}Changes`,
         output: props.output,
         outputFileName: props.outputFileName

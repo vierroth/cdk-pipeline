@@ -6,5 +6,9 @@ export interface SourceSegmentProps {
 }
 
 export abstract class SourceSegment extends Segment {
-  readonly isSource: boolean = true;
+  readonly isSource = true;
+}
+
+export function isSource(item: Segment): item is SourceSegment {
+  return item.isSource;
 }

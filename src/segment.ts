@@ -18,22 +18,14 @@ export abstract class Segment {
   readonly outputs: Artifact[] = [];
   constructor(props: SegmentProps) {
     if (props.input) {
-      this.inputs = (
-        props.input.constructor.name === "Array" ? props.input : [props.input]
-      ) as Artifact[];
-      this.inputs.forEach((artifact: Artifact) => {
-        artifact.consume(this);
-      }, this);
+      this.inputs = Array.isArray(props.input) ? props.input : [props.input];
+      this.inputs.forEach((artifact) => artifact.consume(this), this);
     }
     if (props.output) {
-      this.outputs = (
-        props.output.constructor.name === "Array"
-          ? props.output
-          : [props.output]
-      ) as Artifact[];
-      this.outputs.forEach((artifact: Artifact) => {
-        artifact.produce(this);
-      }, this);
+      this.outputs = Array.isArray(props.output)
+        ? props.output
+        : [props.output];
+      this.outputs.forEach((artifact) => artifact.produce(this), this);
     }
   }
   abstract construct(scope: Pipeline): SegmentConstructed;

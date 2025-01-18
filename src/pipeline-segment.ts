@@ -40,14 +40,6 @@ export interface PipelineSegmentProps {
    */
   readonly stackName?: string;
   /**
-   * The AWS account this Action is supposed to operate in.
-   */
-  readonly account?: string;
-  /**
-   * The AWS region the given Action resides in.
-   */
-  readonly region?: string;
-  /**
    * The artifact to hold the stack deployment output file.
    * @default no output artifact
    */
@@ -68,7 +60,7 @@ export interface PipelineSegmentProps {
  * @category Segments
  */
 export class PipelineSegment extends Segment {
-  readonly isPipeline: boolean = true;
+  readonly isPipeline = true;
   readonly props: PipelineSegmentProps;
 
   constructor(props: PipelineSegmentProps) {
@@ -91,8 +83,6 @@ export interface PipelineSegmentConstructedProps {
   readonly project: ProjectProps;
   readonly environmentVariables?: { [key: string]: BuildEnvironmentVariable };
   readonly stackName?: string;
-  readonly account?: string;
-  readonly region?: string;
   readonly input: Artifact;
   readonly extraInputs?: Artifact[];
   readonly output?: Artifact;
@@ -151,8 +141,8 @@ export class PipelineSegmentConstructed extends SegmentConstructed {
         actionName: "PrepareChanges",
         runOrder: 3,
         stackName: props.stackName ? props.stackName : props.stack.stackName,
-        account: props.account,
-        region: props.region,
+        account: props.stack.account,
+        region: props.stack.region,
         changeSetName: `${props.stack.stackName}Changes`,
         adminPermissions: true,
         templatePath: buildArtifact.atPath(
@@ -171,10 +161,14 @@ export class PipelineSegmentConstructed extends SegmentConstructed {
         actionName: "ExecuteChanges",
         runOrder: props.manualApproval ? 5 : 4,
         stackName: props.stackName ? props.stackName : props.stack.stackName,
-        account: props.account,
-        region: props.region,
+        account: props.stack.account,
+        region: props.stack.region,
         changeSetName: `${props.stack.stackName}Changes`,
       }),
     ];
   }
+}
+
+export function isPipeline(item: Segment): item is PipelineSegment {
+  return item.isPipeline;
 }

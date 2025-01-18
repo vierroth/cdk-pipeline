@@ -7,22 +7,22 @@ import {
 } from "aws-cdk-lib/aws-codepipeline";
 import * as path from "path";
 
-import { Artifact } from "./artifact";
 import { Segment } from "./segment";
-import { SourceSegment } from "./source-segment";
-import { PipelineSegment } from "./pipeline-segment";
+import { isSource } from "./source-segment";
+import { isPipeline } from "./pipeline-segment";
 
 export interface PipelineProps extends StackProps {
   /**
    * The name of the generated pipeline.
-   * @default Stack ID
+   * @defaultValue Stack ID
    */
   readonly pipelineName?: string;
   /**
    * The path to the cdk projects root directory containing the cdk.json file
    * relative to the asset root
+   * @defaultValue `"."`
    */
-  readonly rootDir: string;
+  readonly rootDir?: string;
   /**
    * The segments to populating the pipeline.
    */
@@ -44,29 +44,37 @@ export class Pipeline extends Stack {
   ) {
     super(scope, id, props);
 
-    this.pipelineName = props.pipelineName ? props.pipelineName : id;
-    this.rootDir = props.rootDir;
+    this.pipelineName = props.pipelineName || id;
+    this.rootDir = props.rootDir || ".";
     this.buildDir = path.join(this.rootDir, (this.node.root as App).outdir);
 
     if (!this.bundlingRequired) return;
 
-    props.segments.forEach((segment: Segment) => {
-      segment.inputs.forEach((artifact: Artifact) => {
-        if (!artifact.obtainProducer())
+    props.segments.forEach((segment) => {
+      segment.inputs.forEach((artifact) => {
+        if (!artifact.producer) {
           throw new Error("Artifact consumed but never produced.");
+        }
       });
     });
 
-    const sourceSegments: SourceSegment[] = props.segments.filter(
-      (segment: Segment) => segment.isSource,
-    ) as SourceSegment[];
+    const sourceSegments = props.segments.filter(isSource);
+    const pipelineSegments = props.segments.filter(isPipeline);
 
-    const pipelineSegment: PipelineSegment | undefined = props.segments.find(
-      (segment: Segment) => segment.isPipeline,
-    ) as PipelineSegment;
+    if (pipelineSegments.length < 1) {
+      throw new Error(
+        "Missing pipeline segment, one instance of the pipeline segment is required in the segments array.",
+      );
+    }
+
+    if (pipelineSegments.length > 1) {
+      throw new Error(
+        "To many pipeline segment, only one instance of the pipeline segment can be present in the segments array.",
+      );
+    }
 
     const segments: Segment[] = props.segments.filter(
-      (segment: Segment) => !segment.isSource && !segment.isPipeline,
+      (segment) => !isSource(segment) && !isPipeline(segment),
     );
 
     new AwsPipeline(this, "Pipeline", {
@@ -78,19 +86,19 @@ export class Pipeline extends Stack {
           stageName: "Source",
           actions: [
             ...sourceSegments.reduce(
-              (actions: IAction[], segment: SourceSegment) => [
+              (actions, segment) => [
                 ...actions,
                 ...segment.construct(this).actions,
               ],
-              [],
+              [] as IAction[],
             ),
           ],
         },
         {
           stageName: "Pipeline",
-          actions: [...pipelineSegment.construct(this).actions],
+          actions: [...pipelineSegments[0].construct(this).actions],
         },
-        ...segments.map((segment: Segment) => {
+        ...segments.map((segment) => {
           const build = segment.construct(this);
           return {
             stageName: build.name,

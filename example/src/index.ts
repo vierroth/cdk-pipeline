@@ -22,7 +22,6 @@ const TEST_STACK_1 = new TestStack1(APP, "TestStack1", {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION,
   },
-  terminationProtection: true,
 });
 
 const TEST_STACK_2 = new TestStack2(APP, "TestStack2", {
@@ -30,14 +29,13 @@ const TEST_STACK_2 = new TestStack2(APP, "TestStack2", {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION,
   },
-  terminationProtection: true,
 });
 
 const SOURCE_ARTIFACT = new Artifact();
 const PIPELINE_BUILD_ARTIFACT = new Artifact();
 
 new Pipeline(APP, "ExamplePipeline", {
-  rootDir: "./example/",
+  rootDir: "example/",
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION,
