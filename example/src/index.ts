@@ -53,11 +53,6 @@ new Pipeline(APP, "ExamplePipeline", {
       input: SOURCE_ARTIFACT,
       output: PIPELINE_BUILD_ARTIFACT,
       project: {
-        environment: {
-          computeType: ComputeType.MEDIUM,
-          buildImage: LinuxBuildImage.AMAZON_LINUX_2_ARM_3,
-          privileged: true,
-        },
         buildSpec: BuildSpec.fromObject({
           version: "0.2",
           phases: {
