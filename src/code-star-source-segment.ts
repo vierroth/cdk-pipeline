@@ -47,7 +47,7 @@ export class CodeStarSourceSegment extends SourceSegment {
       this.props.branch || "master"
     }`;
 
-    return new CodeStarSourceSegmentConstructed(scope, name, {
+    return new CodeStarSourceSegmentConstructed(scope, name.replace("/", "-"), {
       ...this.props,
       actionName: name,
       repo: this.props.repository,

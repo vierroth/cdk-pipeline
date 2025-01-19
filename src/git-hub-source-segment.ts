@@ -45,7 +45,7 @@ export class GitHubSourceSegment extends SourceSegment {
       this.props.branch || "master"
     }`;
 
-    return new GitHubSourceSegmentConstructed(scope, name, {
+    return new GitHubSourceSegmentConstructed(scope, name.replace("/", "-"), {
       ...this.props,
       actionName: name,
       repo: this.props.repository,
