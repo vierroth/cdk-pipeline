@@ -49,17 +49,21 @@ export interface StackSegmentProps {
    */
   readonly stackName?: string;
   /**
+   * The artifact to hold the output of the build if this stack includes a build.
+   */
+  readonly buildOutput?: Artifact;
+  /**
    * The artifact to hold the stack deployment output file.
    */
-  readonly output?: Artifact;
+  readonly stackOutput?: Artifact;
   /**
    * The filename for the file in the output artifact
-   * @default `"artifact.json"`
+   * @default "artifact.json"
    */
   readonly outputFileName?: string;
   /**
    * Does this stage require manual approval of the change set?
-   * @default `false`
+   * @default false
    */
   readonly manualApproval?: Boolean;
 }
@@ -71,7 +75,10 @@ export class StackSegment extends Segment {
   readonly props: StackSegmentProps;
 
   constructor(props: StackSegmentProps) {
-    super(props);
+    super({
+      ...props,
+      output: [props.buildOutput, props.stackOutput].filter((a) => !!a),
+    });
     this.props = props;
   }
 
@@ -95,7 +102,8 @@ export interface StackSegmentConstructedProps {
   readonly stackName?: string;
   readonly input: Artifact;
   readonly extraInputs?: Artifact[];
-  readonly output?: Artifact;
+  readonly buildOutput?: Artifact;
+  readonly stackOutput?: Artifact;
   readonly outputFileName?: string;
   readonly manualApproval?: Boolean;
 }
@@ -113,7 +121,9 @@ export class StackSegmentConstructed extends SegmentConstructed {
 
     this.name = props.stack.stackName;
 
-    const buildArtifact = props.project ? new Artifact() : undefined;
+    const buildArtifact = props.project
+      ? props.buildOutput || new Artifact()
+      : undefined;
 
     this.actions = [
       ...(buildArtifact
@@ -184,11 +194,11 @@ export class StackSegmentConstructed extends SegmentConstructed {
         account: props.stack.account,
         region: props.stack.region,
         changeSetName: `${props.stack.stackName}Changes`,
-        output: props.output,
+        output: props.stackOutput,
         outputFileName: props.outputFileName
           ? props.outputFileName
-          : props.output
-            ? `artifact.json`
+          : props.stackOutput
+            ? "artifact.json"
             : undefined,
       }),
     ];

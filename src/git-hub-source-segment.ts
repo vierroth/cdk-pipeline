@@ -14,17 +14,17 @@ export interface GitHubSourceSegmentProps extends SourceSegmentProps {
   readonly oauthToken: SecretValue;
   /**
    * The owning user or organization of the repository.
-   * @example `"aws"`
+   * @example "aws"
    */
   readonly owner: string;
   /**
    * The name of the repository.
-   * @example `"aws-cdk"`
+   * @example "aws-cdk"
    */
   readonly repository: string;
   /**
    * The branch to build.
-   * @default `"master"`
+   * @default "master"
    */
   readonly branch?: string;
   readonly trigger?: GitHubTrigger;

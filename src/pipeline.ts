@@ -20,7 +20,7 @@ export interface PipelineProps extends StackProps {
   /**
    * The path to the cdk projects root directory containing the cdk.json file
    * relative to the asset root
-   * @default `"."`
+   * @default "."
    */
   readonly rootDir?: string;
   /**

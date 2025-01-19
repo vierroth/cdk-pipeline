@@ -9,7 +9,7 @@ import { SourceSegment, SourceSegmentProps } from "./source-segment";
 export interface CodeStarSourceSegmentProps extends SourceSegmentProps {
   /**
    * The owning user or organization of the repository.
-   * @example `"aws"`
+   * @example "aws"
    */
   readonly owner: string;
   /**
@@ -21,12 +21,12 @@ export interface CodeStarSourceSegmentProps extends SourceSegmentProps {
   readonly connectionArn: string;
   /**
    * The name of the repository.
-   * @example `"aws-cdk"`
+   * @example "aws-cdk"
    */
   readonly repository: string;
   /**
    * The branch to build.
-   * @default `"master"`
+   * @default "master"
    */
   readonly branch?: string;
   readonly triggerOnPush?: boolean;
