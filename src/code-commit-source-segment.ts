@@ -32,7 +32,7 @@ export class CodeCommitSourceSegment extends SourceSegment {
       this.props.repository.repositoryName,
       {
         ...this.props,
-        actionName: this.props.repository.repositoryName,
+        actionName: `${this.props.repository}/${this.props.branch || "master"}`,
       },
     );
   }

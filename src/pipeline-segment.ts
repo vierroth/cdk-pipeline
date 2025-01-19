@@ -36,7 +36,7 @@ export interface PipelineSegmentProps {
   readonly environmentVariables?: { [key: string]: BuildEnvironmentVariable };
   /**
    * The name of the stack to apply this action to.
-   * @deafult The name of the given stack.
+   * @default The name of the given stack.
    */
   readonly stackName?: string;
   /**

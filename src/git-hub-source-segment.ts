@@ -12,8 +12,20 @@ import { SourceSegment, SourceSegmentProps } from "./source-segment";
 
 export interface GitHubSourceSegmentProps extends SourceSegmentProps {
   readonly oauthToken: SecretValue;
+  /**
+   * The owning user or organization of the repository.
+   * @example `"aws"`
+   */
   readonly owner: string;
+  /**
+   * The name of the repository.
+   * @example `"aws-cdk"`
+   */
   readonly repository: string;
+  /**
+   * The branch to build.
+   * @default `"master"`
+   */
   readonly branch?: string;
   readonly trigger?: GitHubTrigger;
   readonly variablesNamespace?: string;
@@ -31,7 +43,9 @@ export class GitHubSourceSegment extends SourceSegment {
   construct(scope: Pipeline): SegmentConstructed {
     return new GitHubSourceSegmentConstructed(scope, this.props.repository, {
       ...this.props,
-      actionName: this.props.repository,
+      actionName: `${this.props.owner}/${this.props.repository}/${
+        this.props.branch || "master"
+      }`,
       repo: this.props.repository,
     });
   }

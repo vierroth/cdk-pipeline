@@ -45,7 +45,7 @@ export interface StackSegmentProps {
   readonly environmentVariables?: { [key: string]: BuildEnvironmentVariable };
   /**
    * The name of the stack to deploy the changes to.
-   * @defaultValue The name of the given stack.
+   * @default The name of the given stack.
    */
   readonly stackName?: string;
   /**
@@ -54,12 +54,12 @@ export interface StackSegmentProps {
   readonly output?: Artifact;
   /**
    * The filename for the file in the output artifact
-   * @defaultValue `"artifact.json"``
+   * @default `"artifact.json"`
    */
   readonly outputFileName?: string;
   /**
    * Does this stage require manual approval of the change set?
-   * @defaultValue `false``
+   * @default `false`
    */
   readonly manualApproval?: Boolean;
 }

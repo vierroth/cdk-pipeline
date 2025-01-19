@@ -14,13 +14,13 @@ import { isPipeline } from "./pipeline-segment";
 export interface PipelineProps extends StackProps {
   /**
    * The name of the generated pipeline.
-   * @defaultValue Stack ID
+   * @default Stack ID
    */
   readonly pipelineName?: string;
   /**
    * The path to the cdk projects root directory containing the cdk.json file
    * relative to the asset root
-   * @defaultValue `"."`
+   * @default `"."`
    */
   readonly rootDir?: string;
   /**
