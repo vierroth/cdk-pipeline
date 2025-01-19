@@ -29,9 +29,11 @@ export class S3SourceSegment extends SourceSegment {
     this.props = props;
   }
   construct(scope: Pipeline): SegmentConstructed {
-    return new S3SourceSegmentConstructed(scope, this.props.bucket.bucketName, {
+    const name = `${this.props.bucket}/${this.props.bucketKey}`;
+
+    return new S3SourceSegmentConstructed(scope, name, {
       ...this.props,
-      actionName: `${this.props.bucket}/${this.props.bucketKey}`,
+      actionName: name,
     });
   }
 }

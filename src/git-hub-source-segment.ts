@@ -41,11 +41,13 @@ export class GitHubSourceSegment extends SourceSegment {
     this.props = props;
   }
   construct(scope: Pipeline): SegmentConstructed {
-    return new GitHubSourceSegmentConstructed(scope, this.props.repository, {
+    const name = `${this.props.owner}/${this.props.repository}/${
+      this.props.branch || "master"
+    }`;
+
+    return new GitHubSourceSegmentConstructed(scope, name, {
       ...this.props,
-      actionName: `${this.props.owner}/${this.props.repository}/${
-        this.props.branch || "master"
-      }`,
+      actionName: name,
       repo: this.props.repository,
     });
   }

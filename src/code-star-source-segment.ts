@@ -43,11 +43,13 @@ export class CodeStarSourceSegment extends SourceSegment {
     this.props = props;
   }
   construct(scope: Pipeline): SegmentConstructed {
-    return new CodeStarSourceSegmentConstructed(scope, this.props.repository, {
+    const name = `${this.props.owner}/${this.props.repository}/${
+      this.props.branch || "master"
+    }`;
+
+    return new CodeStarSourceSegmentConstructed(scope, name, {
       ...this.props,
-      actionName: `${this.props.owner}/${this.props.repository}/${
-        this.props.branch || "master"
-      }`,
+      actionName: name,
       repo: this.props.repository,
     });
   }
