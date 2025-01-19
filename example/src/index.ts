@@ -6,11 +6,7 @@ import {
   StackSegment,
   Artifact,
 } from "@flit/cdk-pipeline";
-import {
-  BuildSpec,
-  ComputeType,
-  LinuxBuildImage,
-} from "aws-cdk-lib/aws-codebuild";
+import { BuildSpec } from "aws-cdk-lib/aws-codebuild";
 
 import { TestStack1 } from "./stacks/test-stack-1.js";
 import { TestStack2 } from "./stacks/test-stack-2.js";
@@ -43,8 +39,7 @@ new Pipeline(APP, "ExamplePipeline", {
   segments: [
     new CodeStarSourceSegment({
       output: SOURCE_ARTIFACT,
-      connectionArn:
-        "arn:aws:codeconnections:eu-central-1:248111704443:connection/9ae5e5cd-940d-4996-ab75-9b90881b8870",
+      connectionArn: "replace with your connection ARN",
       owner: "vierroth",
       repository: "cdk-pipeline",
       branch: "main",

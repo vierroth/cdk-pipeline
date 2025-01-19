@@ -35,7 +35,7 @@
     "./example"
   ],
   "scripts": {
-    "build": "jsii",
+    "build": "jsii && (cd example && npm run build)",
     "prepack": "jsii"
   },
   "prettier": {
