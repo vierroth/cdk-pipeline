@@ -41,11 +41,11 @@ export class GitHubSourceSegment extends SourceSegment {
     this.props = props;
   }
   construct(scope: Pipeline): SegmentConstructed {
-    const name = `${this.props.owner}/${this.props.repository}/${
+    const name = `${this.props.owner}-${this.props.repository}-${
       this.props.branch || "master"
     }`;
 
-    return new GitHubSourceSegmentConstructed(scope, name.replace("/", "-"), {
+    return new GitHubSourceSegmentConstructed(scope, name, {
       ...this.props,
       actionName: name,
       repo: this.props.repository,

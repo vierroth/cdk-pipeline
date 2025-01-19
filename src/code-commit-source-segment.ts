@@ -27,16 +27,12 @@ export class CodeCommitSourceSegment extends SourceSegment {
     this.props = props;
   }
   construct(scope: Pipeline): SegmentConstructed {
-    const name = `${this.props.repository}/${this.props.branch || "master"}`;
+    const name = `${this.props.repository}-${this.props.branch || "master"}`;
 
-    return new CodeCommitSourceSegmentConstructed(
-      scope,
-      name.replace("/", "-"),
-      {
-        ...this.props,
-        actionName: name,
-      },
-    );
+    return new CodeCommitSourceSegmentConstructed(scope, name, {
+      ...this.props,
+      actionName: name,
+    });
   }
 }
 
