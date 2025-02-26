@@ -7,7 +7,7 @@ import {
 } from "aws-cdk-lib/aws-codepipeline";
 import * as path from "path";
 
-import { Segment } from "./segment";
+import { Segment, SegmentConstructed } from "./segment";
 import { isSource } from "./source-segment";
 import { isPipeline } from "./pipeline-segment";
 
@@ -26,7 +26,7 @@ export interface PipelineProps extends StackProps {
   /**
    * The segments to populating the pipeline.
    */
-  readonly segments: Segment[];
+  readonly segments: (Segment | Segment[])[];
 }
 
 /**
@@ -50,32 +50,38 @@ export class Pipeline extends Stack {
 
     if (!this.bundlingRequired) return;
 
-    props.segments.forEach((segment) => {
-      segment.inputs.forEach((artifact) => {
-        if (!artifact.producer) {
-          throw new Error("Artifact consumed but never produced.");
-        }
+    const segments = props.segments.map((segment) =>
+      Array.isArray(segment) ? segment : [segment],
+    );
+
+    segments.forEach((unit) => {
+      unit.forEach((segment) => {
+        segment.inputs.forEach((artifact) => {
+          if (!artifact.producer) {
+            throw new Error("Artifact consumed but never produced.");
+          }
+        });
       });
     });
 
-    const sourceSegments = props.segments.filter(isSource);
-    const pipelineSegments = props.segments.filter(isPipeline);
-
-    if (pipelineSegments.length < 1) {
-      throw new Error(
-        "Missing pipeline segment, one instance of the pipeline segment is required in the segments array.",
-      );
+    if (segments[0].filter(isSource).length !== segments[0].length) {
+      throw new Error("First segment must contain only source segments");
     }
 
-    if (pipelineSegments.length > 1) {
-      throw new Error(
-        "To many pipeline segment, only one instance of the pipeline segment can be present in the segments array.",
-      );
+    if (segments.slice(1).find((unit) => unit.filter(isSource).length)) {
+      throw new Error("Only the first segment can contain source segments");
     }
 
-    const segments: Segment[] = props.segments.filter(
-      (segment) => !isSource(segment) && !isPipeline(segment),
-    );
+    if (
+      segments[1].length === 1 &&
+      segments[1].filter(isPipeline).length !== segments[0].length
+    ) {
+      throw new Error("Second segment must be the pipeline segment");
+    }
+
+    if (segments.slice(2).find((unit) => unit.filter(isPipeline).length)) {
+      throw new Error("Only the second segment can be the pipeline segment");
+    }
 
     new AwsPipeline(this, "Pipeline", {
       pipelineName: props.pipelineName,
@@ -85,7 +91,7 @@ export class Pipeline extends Stack {
         {
           stageName: "Source",
           actions: [
-            ...sourceSegments.reduce(
+            ...segments[0].reduce(
               (actions, segment) => [
                 ...actions,
                 ...segment.construct(this).actions,
@@ -96,13 +102,27 @@ export class Pipeline extends Stack {
         },
         {
           stageName: "Pipeline",
-          actions: [...pipelineSegments[0].construct(this).actions],
+          actions: [
+            ...segments[1].reduce(
+              (actions, segment) => [
+                ...actions,
+                ...segment.construct(this).actions,
+              ],
+              [] as IAction[],
+            ),
+          ],
         },
-        ...segments.map((segment) => {
-          const build = segment.construct(this);
+        ...segments.slice(2).map((unit) => {
+          const builds = unit.reduce(
+            (segments, segment) => [...segments, segment.construct(this)],
+            [] as SegmentConstructed[],
+          );
           return {
-            stageName: build.name,
-            actions: build.actions,
+            stageName: builds.map((build) => build.name).join(""),
+            actions: builds.reduce(
+              (actions, build) => [...actions, ...build.actions],
+              [] as IAction[],
+            ),
           };
         }),
       ],

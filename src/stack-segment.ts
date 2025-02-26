@@ -129,7 +129,7 @@ export class StackSegmentConstructed extends SegmentConstructed {
       ...(buildArtifact
         ? [
             new CodeBuildAction({
-              actionName: "Build",
+              actionName: `${this.name}Build`,
               runOrder: 1,
               input: props.input,
               extraInputs: props.extraInputs,
@@ -154,7 +154,7 @@ export class StackSegmentConstructed extends SegmentConstructed {
               }),
             }),
             new PublishAssetsAction(this, "PublishAssets", {
-              actionName: "PublishAssets",
+              actionName: `${this.name}PublishAssets`,
               runOrder: 2,
               input: buildArtifact,
               manifestPath: scope.buildDir,
@@ -162,7 +162,7 @@ export class StackSegmentConstructed extends SegmentConstructed {
           ]
         : []),
       new CloudFormationCreateReplaceChangeSetAction({
-        actionName: "PrepareChanges",
+        actionName: `${this.name}PrepareChanges`,
         runOrder: buildArtifact ? 3 : 1,
         stackName: props.stackName ? props.stackName : props.stack.stackName,
         account: props.stack.account,
@@ -176,13 +176,13 @@ export class StackSegmentConstructed extends SegmentConstructed {
       ...(props.manualApproval
         ? [
             new ManualApprovalAction({
-              actionName: "ApproveChanges",
+              actionName: `${this.name}ApproveChanges`,
               runOrder: buildArtifact ? 4 : 2,
             }),
           ]
         : []),
       new CloudFormationExecuteChangeSetAction({
-        actionName: "ExecuteChanges",
+        actionName: `${this.name}ExecuteChanges`,
         runOrder: props.manualApproval
           ? buildArtifact
             ? 5
