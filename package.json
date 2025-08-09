@@ -1,6 +1,6 @@
 {
   "name": "@flit/cdk-pipeline",
-  "version": "1.4.3",
+  "version": "1.5.0",
   "description": "A highly customizable and extensible CI/CD pipeline intended as alternative to CDK's native CodePipeline",
   "keywords": [
     "aws",
@@ -19,9 +19,15 @@
   },
   "license": "Apache-2.0",
   "author": {
-    "name": "Luis Vierroth",
-    "url": "https://github.com/p-mercury"
+    "name": "Vierroth GmbH",
+    "url": "https://github.com/vierroth"
   },
+  "contributors": [
+    {
+      "name": "Luis Vierroth",
+      "url": "https://github.com/p-mercury"
+    }
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
@@ -53,18 +59,18 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "^22.13.5",
-    "aws-cdk-lib": "^2.174.0",
-    "constructs": "^10.4.0",
-    "jsii": "^5.7.6",
-    "jsii-pacmak": "^1.108.0",
-    "prettier": "^3.5.2",
-    "prettier-plugin-packagejson": "^2.5.8",
-    "typescript": "^5.7.3"
+    "@types/node": "^24.2.1",
+    "aws-cdk-lib": "^2.210.0",
+    "constructs": "^10.4.2",
+    "jsii": "^5.9.1",
+    "jsii-pacmak": "^1.113.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-packagejson": "^2.5.19",
+    "typescript": "^5.9.2"
   },
   "peerDependencies": {
-    "aws-cdk-lib": "^2.174.0",
-    "constructs": "^10.4.0"
+    "aws-cdk-lib": "^2.210.0",
+    "constructs": "^10.4.2"
   },
   "publishConfig": {
     "access": "public"

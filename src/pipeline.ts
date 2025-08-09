@@ -74,7 +74,7 @@ export class Pipeline extends Stack {
 
     if (
       segments[1].length === 1 &&
-      segments[1].filter(isPipeline).length !== segments[0].length
+      segments[1].filter(isPipeline).length !== segments[1].length
     ) {
       throw new Error("Second segment must be the pipeline segment");
     }
@@ -118,7 +118,7 @@ export class Pipeline extends Stack {
             [] as SegmentConstructed[],
           );
           return {
-            stageName: builds.map((build) => build.name).join(""),
+            stageName: builds.map((build) => build.name).join("-"),
             actions: builds.reduce(
               (actions, build) => [...actions, ...build.actions],
               [] as IAction[],

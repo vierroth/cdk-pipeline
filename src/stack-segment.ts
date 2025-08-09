@@ -1,6 +1,7 @@
 import { Stack } from "aws-cdk-lib";
 import {
   BuildEnvironmentVariable,
+  BuildEnvironmentVariableType,
   BuildSpec,
   mergeBuildSpecs,
   Project,
@@ -13,7 +14,7 @@ import {
   CodeBuildAction,
   ManualApprovalAction,
 } from "aws-cdk-lib/aws-codepipeline-actions";
-import { IRole } from "aws-cdk-lib/aws-iam";
+import { IRole, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import * as path from "path";
 
 import { Artifact } from "./artifact";
@@ -125,6 +126,62 @@ export class StackSegmentConstructed extends SegmentConstructed {
       ? props.buildOutput || new Artifact()
       : undefined;
 
+    const codeBuildProject = new Project(this, "UpdateCodeBuild", {
+      ...props.project,
+      buildSpec: props.project?.buildSpec
+        ? mergeBuildSpecs(
+            props.project.buildSpec,
+            BuildSpec.fromObject({
+              artifacts: {
+                files: [path.join(scope.buildDir, "**/*")],
+              },
+            }),
+          )
+        : BuildSpec.fromObject({
+            artifacts: {
+              files: [path.join(scope.buildDir, "**/*")],
+            },
+          }),
+    });
+
+    Object.entries(
+      props.project?.environment?.environmentVariables || [],
+    ).forEach(([, v]) => {
+      switch (v.type) {
+        case BuildEnvironmentVariableType.PARAMETER_STORE:
+          codeBuildProject.addToRolePolicy(
+            new PolicyStatement({
+              actions: [
+                "ssm:GetParameter",
+                "ssm:GetParameters",
+                "ssm:GetParametersByPath",
+              ],
+              resources: [
+                `arn:aws:ssm:*:${Stack.of(this).account}:parameter/${v.value}`,
+              ],
+            }),
+          );
+          break;
+        case BuildEnvironmentVariableType.SECRETS_MANAGER:
+          codeBuildProject.addToRolePolicy(
+            new PolicyStatement({
+              actions: [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+              ],
+              resources: [
+                (v.value as string).startsWith("arn:")
+                  ? v.value.split(":").slice(0, 7).join(":")
+                  : `arn:aws:secretsmanager:*:${
+                      Stack.of(this).account
+                    }:secret:${v.value}-*`,
+              ],
+            }),
+          );
+          break;
+      }
+    });
+
     this.actions = [
       ...(buildArtifact
         ? [
@@ -135,23 +192,7 @@ export class StackSegmentConstructed extends SegmentConstructed {
               extraInputs: props.extraInputs,
               outputs: [buildArtifact],
               environmentVariables: props.environmentVariables,
-              project: new Project(this, "UpdateCodeBuild", {
-                ...props.project,
-                buildSpec: props.project?.buildSpec
-                  ? mergeBuildSpecs(
-                      props.project.buildSpec,
-                      BuildSpec.fromObject({
-                        artifacts: {
-                          files: [path.join(scope.buildDir, "**/*")],
-                        },
-                      }),
-                    )
-                  : BuildSpec.fromObject({
-                      artifacts: {
-                        files: [path.join(scope.buildDir, "**/*")],
-                      },
-                    }),
-              }),
+              project: codeBuildProject,
             }),
             new PublishAssetsAction(this, "PublishAssets", {
               actionName: `${this.name}PublishAssets`,
