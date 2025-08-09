@@ -1,107 +1,99 @@
 {
-  "name": "@flit/cdk-pipeline",
-  "version": "1.5.0",
-  "description": "A highly customizable and extensible CI/CD pipeline intended as alternative to CDK's native CodePipeline",
-  "keywords": [
-    "aws",
-    "cdk",
-    "awscdk",
-    "aws-cdk",
-    "pipeline",
-    "codepipeline",
-    "cicd"
-  ],
-  "homepage": "https://github.com/vierroth/cdk-pipeline",
-  "bugs": "https://github.com/vierroth/cdk-pipeline/issues",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/vierroth/cdk-pipeline.git"
-  },
-  "license": "Apache-2.0",
-  "author": {
-    "name": "Vierroth GmbH",
-    "url": "https://github.com/vierroth"
-  },
-  "contributors": [
-    {
-      "name": "Luis Vierroth",
-      "url": "https://github.com/p-mercury"
-    }
-  ],
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "./dist",
-    "./src",
-    "./.jsii",
-    "./LICENSE.txt",
-    "./README.md"
-  ],
-  "workspaces": [
-    "./example"
-  ],
-  "scripts": {
-    "build": "jsii && (cd example && npm run build)",
-    "prepack": "jsii"
-  },
-  "prettier": {
-    "plugins": [
-      "prettier-plugin-packagejson"
-    ],
-    "tabWidth": 2,
-    "overrides": [
-      {
-        "files": "*.sublime-project",
-        "options": {
-          "parser": "json"
-        }
-      }
-    ]
-  },
-  "devDependencies": {
-    "@types/node": "^24.2.1",
-    "aws-cdk-lib": "^2.210.0",
-    "constructs": "^10.4.2",
-    "jsii": "^5.9.1",
-    "jsii-pacmak": "^1.113.0",
-    "prettier": "^3.6.2",
-    "prettier-plugin-packagejson": "^2.5.19",
-    "typescript": "^5.9.2"
-  },
-  "peerDependencies": {
-    "aws-cdk-lib": "^2.210.0",
-    "constructs": "^10.4.2"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "jsii": {
-    "outdir": "./dist",
-    "tsc": {
-      "rootDir": "./src",
-      "outDir": "./dist"
-    },
-    "targets": {
-      "java": {
-        "package": "flit.cdk-pipeline",
-        "maven": {
-          "groupId": "flit",
-          "artifactId": "cdk-pipeline"
-        }
-      },
-      "dotnet": {
-        "namespace": "Flit.CDK.Pipeline",
-        "packageId": "Flit.CDK.Pipeline"
-      },
-      "python": {
-        "libName": "flit.cdk-pipeline",
-        "module": "flit.cdk-pipeline",
-        "classifiers": [
-          "Framework :: AWS CDK",
-          "Framework :: AWS CDK :: 2"
-        ]
-      }
-    }
-  },
-  "stability": "stable"
+	"name": "@flit/cdk-pipeline",
+	"version": "1.5.0",
+	"description": "A highly customizable and extensible CI/CD pipeline intended as alternative to CDK's native CodePipeline",
+	"keywords": [
+		"aws",
+		"cdk",
+		"awscdk",
+		"aws-cdk",
+		"pipeline",
+		"codepipeline",
+		"cicd"
+	],
+	"homepage": "https://github.com/vierroth/cdk-pipeline",
+	"bugs": "https://github.com/vierroth/cdk-pipeline/issues",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/vierroth/cdk-pipeline.git"
+	},
+	"license": "Apache-2.0",
+	"author": {
+		"name": "Vierroth GmbH",
+		"url": "https://github.com/vierroth"
+	},
+	"contributors": [
+		{
+			"name": "Luis Vierroth",
+			"url": "https://github.com/p-mercury"
+		}
+	],
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"./dist",
+		"./src",
+		"./.jsii",
+		"./LICENSE.txt",
+		"./README.md"
+	],
+	"workspaces": [
+		"./example"
+	],
+	"scripts": {
+		"build": "jsii && (cd example && npm run build)",
+		"prepack": "jsii"
+	},
+	"prettier": {
+		"plugins": [
+			"prettier-plugin-packagejson"
+		],
+		"useTabs": true
+	},
+	"devDependencies": {
+		"@types/node": "^24.2.1",
+		"aws-cdk-lib": "^2.210.0",
+		"constructs": "^10.4.2",
+		"jsii": "^5.9.1",
+		"jsii-pacmak": "^1.113.0",
+		"prettier": "^3.6.2",
+		"prettier-plugin-packagejson": "^2.5.19",
+		"typescript": "^5.9.2"
+	},
+	"peerDependencies": {
+		"aws-cdk-lib": "^2.210.0",
+		"constructs": "^10.4.2"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"jsii": {
+		"outdir": "./dist",
+		"tsc": {
+			"rootDir": "./src",
+			"outDir": "./dist"
+		},
+		"targets": {
+			"java": {
+				"package": "flit.cdk-pipeline",
+				"maven": {
+					"groupId": "flit",
+					"artifactId": "cdk-pipeline"
+				}
+			},
+			"dotnet": {
+				"namespace": "Flit.CDK.Pipeline",
+				"packageId": "Flit.CDK.Pipeline"
+			},
+			"python": {
+				"libName": "flit.cdk-pipeline",
+				"module": "flit.cdk-pipeline",
+				"classifiers": [
+					"Framework :: AWS CDK",
+					"Framework :: AWS CDK :: 2"
+				]
+			}
+		}
+	},
+	"stability": "stable"
 }
