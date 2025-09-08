@@ -143,7 +143,7 @@ export class PipelineSegmentConstructed extends SegmentConstructed {
 				stackName: props.stackName ? props.stackName : props.stack.stackName,
 				account: props.stack.account,
 				region: props.stack.region,
-				changeSetName: `${props.stack.stackName}Changes`,
+				changeSetName: `${this.name}Changes`,
 				adminPermissions: true,
 				templatePath: buildArtifact.atPath(
 					path.join(scope.buildDir, props.stack.templateFile),
@@ -163,7 +163,7 @@ export class PipelineSegmentConstructed extends SegmentConstructed {
 				stackName: props.stackName ? props.stackName : props.stack.stackName,
 				account: props.stack.account,
 				region: props.stack.region,
-				changeSetName: `${props.stack.stackName}Changes`,
+				changeSetName: `${this.name}Changes`,
 			}),
 		];
 	}

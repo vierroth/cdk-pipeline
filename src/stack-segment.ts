@@ -120,7 +120,7 @@ export class StackSegmentConstructed extends SegmentConstructed {
 	) {
 		super(scope, id);
 
-		this.name = props.stack.stackName;
+		this.name = props.stack.node.id;
 
 		const buildArtifact = props.project
 			? props.buildOutput || new Artifact()
@@ -208,7 +208,7 @@ export class StackSegmentConstructed extends SegmentConstructed {
 				stackName: props.stackName ? props.stackName : props.stack.stackName,
 				account: props.stack.account,
 				region: props.stack.region,
-				changeSetName: `${props.stack.stackName}Changes`,
+				changeSetName: `${this.name}Changes`,
 				adminPermissions: true,
 				templatePath: (buildArtifact ? buildArtifact : props.input).atPath(
 					path.join(scope.buildDir, props.stack.templateFile),
@@ -234,7 +234,7 @@ export class StackSegmentConstructed extends SegmentConstructed {
 				stackName: props.stackName ? props.stackName : props.stack.stackName,
 				account: props.stack.account,
 				region: props.stack.region,
-				changeSetName: `${props.stack.stackName}Changes`,
+				changeSetName: `${this.name}Changes`,
 				output: props.stackOutput,
 				outputFileName: props.outputFileName
 					? props.outputFileName
