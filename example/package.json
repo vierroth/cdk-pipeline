@@ -1,20 +1,20 @@
 {
-  "name": "example",
-  "version": "1.0.0",
-  "private": true,
-  "description": "@flit/cdk-pipeline example",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "scripts": {
-    "build": "tsc && cdk synth --quiet"
-  },
-  "dependencies": {
-    "@flit/cdk-pipeline": "*",
-    "@types/node": "^24.2.1",
-    "aws-cdk": "^2.1024.0",
-    "aws-cdk-lib": "^2.210.0",
-    "constructs": "^10.4.2",
-    "typescript": "^5.9.2"
-  }
+	"name": "example",
+	"version": "1.0.0",
+	"private": true,
+	"description": "@flit/cdk-pipeline example",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"scripts": {
+		"build": "tsc && cdk synth --quiet"
+	},
+	"dependencies": {
+		"@flit/cdk-pipeline": "file:./../",
+		"@types/node": "^24.3.1",
+		"aws-cdk": "^2.1029.0",
+		"aws-cdk-lib": "^2.214.0",
+		"constructs": "^10.4.2",
+		"typescript": "^5.9.2"
+	}
 }

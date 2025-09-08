@@ -6,15 +6,15 @@ import { Construct } from "constructs";
 export interface TestStack1Props extends StackProps {}
 
 export class TestStack1 extends Stack {
-  constructor(scope: Construct, id: string, props: TestStack1Props) {
-    super(scope, id, props);
+	constructor(scope: Construct, id: string, props: TestStack1Props) {
+		super(scope, id, props);
 
-    new NodejsFunction(this, "TestLambda1", {
-      code: Code.fromInline(
-        "exports.handler = async (event) => console.log(event)",
-      ),
-      runtime: Runtime.NODEJS_LATEST,
-      handler: "index.handler",
-    });
-  }
+		new NodejsFunction(this, "TestLambda1", {
+			code: Code.fromInline(
+				"exports.handler = async (event) => console.log(event)",
+			),
+			runtime: Runtime.NODEJS_LATEST,
+			handler: "index.handler",
+		});
+	}
 }
