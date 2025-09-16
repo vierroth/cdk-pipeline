@@ -11,6 +11,7 @@ export interface SegmentProps {
 }
 
 export abstract class Segment {
+	readonly isSegment: boolean = true;
 	readonly isSource: boolean = false;
 	readonly isPipeline: boolean = false;
 	readonly dependencies?: Stack[];
@@ -34,4 +35,8 @@ export abstract class Segment {
 export abstract class SegmentConstructed extends Construct {
 	readonly name: string = "";
 	readonly actions: IAction[] = [];
+}
+
+export function isSegment(item: any): item is Segment {
+	return item.isSegment;
 }
