@@ -11,7 +11,6 @@ import { SegmentConstructed } from "./segment";
 import { SourceSegment, SourceSegmentProps } from "./source-segment";
 
 export interface CodeCommitSourceSegmentProps extends SourceSegmentProps {
-	readonly repositoryName: string;
 	readonly repositoryArn: string;
 	readonly branch?: string;
 	readonly trigger?: CodeCommitTrigger;
@@ -28,9 +27,11 @@ export class CodeCommitSourceSegment extends SourceSegment {
 		this.props = props;
 	}
 	construct(scope: Pipeline): SegmentConstructed {
-		const name = `${this.props.repositoryName}-${
-			this.props.branch || "master"
-		}`;
+		const name = `${this.props.repositoryArn
+			.trim()
+			.replace(/\/+$/, "")
+			.split(":")
+			.pop()}-${this.props.branch || "master"}`;
 
 		return new CodeCommitSourceSegmentConstructed(scope, name, {
 			...this.props,
