@@ -3,7 +3,7 @@ import {
 	CodeCommitSourceAction,
 	CodeCommitTrigger,
 } from "aws-cdk-lib/aws-codepipeline-actions";
-import { IRepository } from "aws-cdk-lib/aws-codecommit";
+import { Repository } from "aws-cdk-lib/aws-codecommit";
 
 import { Pipeline } from "./pipeline";
 import { Artifact } from "./artifact";
@@ -11,7 +11,8 @@ import { SegmentConstructed } from "./segment";
 import { SourceSegment, SourceSegmentProps } from "./source-segment";
 
 export interface CodeCommitSourceSegmentProps extends SourceSegmentProps {
-	readonly repository: IRepository;
+	readonly repositoryName: string;
+	readonly repositoryArn: string;
 	readonly branch?: string;
 	readonly trigger?: CodeCommitTrigger;
 	readonly variablesNamespace?: string;
@@ -27,7 +28,9 @@ export class CodeCommitSourceSegment extends SourceSegment {
 		this.props = props;
 	}
 	construct(scope: Pipeline): SegmentConstructed {
-		const name = `${this.props.repository}-${this.props.branch || "master"}`;
+		const name = `${this.props.repositoryName}-${
+			this.props.branch || "master"
+		}`;
 
 		return new CodeCommitSourceSegmentConstructed(scope, name, {
 			...this.props,
@@ -39,7 +42,7 @@ export class CodeCommitSourceSegment extends SourceSegment {
 export interface CodeCommitSourceSegmentConstructedProps {
 	readonly output: Artifact;
 	readonly actionName: string;
-	readonly repository: IRepository;
+	readonly repositoryArn: string;
 	readonly branch?: string;
 	readonly trigger?: CodeCommitTrigger;
 	readonly variablesNamespace?: string;
@@ -55,6 +58,15 @@ export class CodeCommitSourceSegmentConstructed extends SegmentConstructed {
 	) {
 		super(scope, id);
 		this.name = "Source";
-		this.actions = [new CodeCommitSourceAction(props)];
+		this.actions = [
+			new CodeCommitSourceAction({
+				repository: Repository.fromRepositoryArn(
+					this,
+					"Repository",
+					props.repositoryArn,
+				),
+				...props,
+			}),
+		];
 	}
 }
