@@ -4,7 +4,6 @@ export * from "./code-star-source-segment";
 export * from "./git-hub-source-segment";
 export * from "./pipeline-segment";
 export * from "./pipeline";
-export * from "./publish-assets-action";
 export * from "./s3-source-segment";
 export * from "./segment";
 export * from "./source-segment";

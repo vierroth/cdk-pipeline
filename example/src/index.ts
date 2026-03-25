@@ -39,7 +39,8 @@ new Pipeline(APP, "ExamplePipeline", {
 	segments: [
 		new CodeStarSourceSegment({
 			output: SOURCE_ARTIFACT,
-			connectionArn: "replace with your connection ARN",
+			connectionArn:
+				"arn:aws:codeconnections:eu-west-1:621490809595:connection/f133e2a1-5a9d-4a67-aeba-fb9362ab1e25",
 			owner: "vierroth",
 			repository: "cdk-pipeline",
 			branch: "main",

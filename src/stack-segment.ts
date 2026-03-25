@@ -3,13 +3,14 @@ import {
 	BuildEnvironmentVariable,
 	BuildEnvironmentVariableType,
 	BuildSpec,
+	ComputeType,
+	LinuxBuildImage,
 	mergeBuildSpecs,
 	Project,
 	ProjectProps,
 } from "aws-cdk-lib/aws-codebuild";
 import { IAction } from "aws-cdk-lib/aws-codepipeline";
 import {
-	CloudFormationCreateReplaceChangeSetAction,
 	CloudFormationExecuteChangeSetAction,
 	CodeBuildAction,
 	ManualApprovalAction,
@@ -20,7 +21,6 @@ import * as path from "path";
 import { Artifact } from "./artifact";
 import { Segment, SegmentConstructed } from "./segment";
 import { Pipeline } from "./pipeline";
-import { PublishAssetsAction } from "./publish-assets-action";
 
 export interface StackSegmentProps {
 	/**
@@ -44,11 +44,6 @@ export interface StackSegmentProps {
 	 * The environmental variables for the build stage.
 	 */
 	readonly environmentVariables?: { [key: string]: BuildEnvironmentVariable };
-	/**
-	 * The name of the stack to deploy the changes to.
-	 * @default The name of the given stack.
-	 */
-	readonly stackName?: string;
 	/**
 	 * The artifact to hold the output of the build if this stack includes a build.
 	 */
@@ -100,7 +95,6 @@ export interface StackSegmentConstructedProps {
 	readonly stack: Stack;
 	readonly project?: ProjectProps;
 	readonly environmentVariables?: { [key: string]: BuildEnvironmentVariable };
-	readonly stackName?: string;
 	readonly input: Artifact;
 	readonly extraInputs?: Artifact[];
 	readonly buildOutput?: Artifact;
@@ -182,6 +176,61 @@ export class StackSegmentConstructed extends SegmentConstructed {
 			}
 		});
 
+		const prepareChangesProject = new Project(this, "PrepareChanges", {
+			environment: {
+				computeType: ComputeType.MEDIUM,
+				buildImage: LinuxBuildImage.AMAZON_LINUX_2_ARM_3,
+			},
+			buildSpec: BuildSpec.fromObject({
+				version: 0.2,
+				phases: {
+					install: {
+						"runtime-versions": {
+							nodejs: "24",
+						},
+						commands: "npm install -g aws-cdk",
+					},
+					build: {
+						commands: `npx cdk deploy ${props.stack.node.id} --app ./ --method prepare-change-set --change-set-name pipeline-${props.stack.node.id}-${this.name} --require-approval never`,
+					},
+				},
+				cache: {
+					paths: ["/root/.npm/**/*"],
+				},
+			}),
+		});
+
+		prepareChangesProject.addToRolePolicy(
+			new PolicyStatement({
+				actions: [
+					"ssm:GetParameter",
+					"cloudformation:CreateChangeSet",
+					"cloudformation:DescribeChangeSet",
+					"cloudformation:DescribeStacks",
+					"cloudformation:GetTemplate",
+					"cloudformation:DeleteChangeSet",
+					"iam:PassRole",
+				],
+				resources: ["*"],
+			}),
+		);
+
+		prepareChangesProject.addToRolePolicy(
+			new PolicyStatement({
+				actions: ["sts:AssumeRole"],
+				resources: [`arn:*:iam::${Stack.of(this).account}:role/*`],
+				conditions: {
+					"ForAnyValue:StringEquals": {
+						"iam:ResourceTag/aws-cdk:bootstrap-role": [
+							"image-publishing",
+							"file-publishing",
+							"deploy",
+						],
+					},
+				},
+			}),
+		);
+
 		this.actions = [
 			...(buildArtifact
 				? [
@@ -194,31 +243,19 @@ export class StackSegmentConstructed extends SegmentConstructed {
 							environmentVariables: props.environmentVariables,
 							project: codeBuildProject,
 						}),
-						new PublishAssetsAction(this, "PublishAssets", {
-							actionName: `${this.name}PublishAssets`,
-							runOrder: 2,
-							input: buildArtifact,
-							manifestPath: scope.buildDir,
-						}),
 				  ]
 				: []),
-			new CloudFormationCreateReplaceChangeSetAction({
+			new CodeBuildAction({
 				actionName: `${this.name}PrepareChanges`,
-				runOrder: buildArtifact ? 3 : 1,
-				stackName: props.stackName ? props.stackName : props.stack.stackName,
-				account: props.stack.account,
-				region: props.stack.region,
-				changeSetName: `${this.name}Changes`,
-				adminPermissions: true,
-				templatePath: (buildArtifact ? buildArtifact : props.input).atPath(
-					path.join(scope.buildDir, props.stack.templateFile),
-				),
+				runOrder: buildArtifact ? 2 : 1,
+				input: buildArtifact ? buildArtifact : props.input,
+				project: prepareChangesProject,
 			}),
 			...(props.manualApproval
 				? [
 						new ManualApprovalAction({
 							actionName: `${this.name}ApproveChanges`,
-							runOrder: buildArtifact ? 4 : 2,
+							runOrder: buildArtifact ? 3 : 2,
 						}),
 				  ]
 				: []),
@@ -226,15 +263,15 @@ export class StackSegmentConstructed extends SegmentConstructed {
 				actionName: `${this.name}ExecuteChanges`,
 				runOrder: props.manualApproval
 					? buildArtifact
-						? 5
+						? 4
 						: 3
 					: buildArtifact
-					  ? 4
+					  ? 3
 					  : 2,
-				stackName: props.stackName ? props.stackName : props.stack.stackName,
+				stackName: props.stack.stackName,
 				account: props.stack.account,
 				region: props.stack.region,
-				changeSetName: `${this.name}Changes`,
+				changeSetName: `pipeline-${props.stack.node.id}-${this.name}`,
 				output: props.stackOutput,
 				outputFileName: props.outputFileName
 					? props.outputFileName
