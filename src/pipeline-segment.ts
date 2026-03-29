@@ -114,7 +114,7 @@ export class PipelineSegmentConstructed extends SegmentConstructed {
 						commands: "npm install -g aws-cdk",
 					},
 					build: {
-						commands: `npx cdk deploy ${props.stack.node.id} --app ./ --method prepare-change-set --change-set-name pipeline-${props.stack.node.id}-${this.name} --require-approval never`,
+						commands: `npx cdk deploy ${props.stack.node.id} --app ./ --exclusively --method prepare-change-set --change-set-name pipeline-${props.stack.node.id}-${this.name} --require-approval never`,
 					},
 				},
 				cache: {
