@@ -7,7 +7,8 @@ import {
 	Project,
 	ProjectProps,
 } from "aws-cdk-lib/aws-codebuild";
-import { Stack } from "aws-cdk-lib";
+import { Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
+import { Cache } from "aws-cdk-lib/aws-codebuild";
 import { IAction } from "aws-cdk-lib/aws-codepipeline";
 import {
 	CloudFormationExecuteChangeSetAction,
@@ -19,6 +20,7 @@ import { Artifact } from "./artifact";
 import { Segment, SegmentConstructed } from "./segment";
 import { Pipeline } from "./pipeline";
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { BlockPublicAccess, Bucket } from "aws-cdk-lib/aws-s3";
 
 export interface PipelineSegmentProps {
 	/**
@@ -30,6 +32,7 @@ export interface PipelineSegmentProps {
 	 * @example "cdk synth StackName --strict --exclusively"
 	 */
 	readonly project: ProjectProps;
+	readonly cache?: boolean;
 	/**
 	 * The environmental variables for the build stage.
 	 */
@@ -76,6 +79,7 @@ export class PipelineSegment extends Segment {
 export interface PipelineSegmentConstructedProps {
 	readonly stack: Stack;
 	readonly project: ProjectProps;
+	readonly cache?: boolean;
 	readonly environmentVariables?: { [key: string]: BuildEnvironmentVariable };
 	readonly input: Artifact;
 	readonly extraInputs?: Artifact[];
@@ -164,6 +168,16 @@ export class PipelineSegmentConstructed extends SegmentConstructed {
 				environmentVariables: props.environmentVariables,
 				project: new Project(this, "UpdateCodeBuild", {
 					...props.project,
+					cache: props.cache
+						? Cache.bucket(
+								new Bucket(this, "CodeBuildCache", {
+									blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+									removalPolicy: RemovalPolicy.DESTROY,
+									autoDeleteObjects: true,
+									lifecycleRules: [{ expiration: Duration.days(30) }],
+								}),
+						  )
+						: undefined,
 					buildSpec: props.project.buildSpec
 						? mergeBuildSpecs(
 								props.project.buildSpec,
