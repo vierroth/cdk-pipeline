@@ -1,5 +1,9 @@
 {
 	"compilerOptions": {
+		"rootDir": "src",
+		"outDir": "dist",
+		"types": ["node"],
+
 		"module": "esnext",
 		"target": "esnext",
 		"lib": ["esnext"],
@@ -17,9 +21,7 @@
 		"inlineSources": true,
 		"strictPropertyInitialization": false,
 		"skipLibCheck": true,
-		"esModuleInterop": true,
-		"moduleResolution": "node",
-		"outDir": "dist"
+		"esModuleInterop": true
 	},
 	"ts-node": {
 		"esm": true
